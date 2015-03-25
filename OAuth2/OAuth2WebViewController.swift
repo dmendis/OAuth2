@@ -144,6 +144,12 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 	required public init(coder aDecoder: NSCoder) {
 		super.init(coder: aDecoder)
 	}
+    
+    public var authWebView:UIWebView! {
+        get {
+            return self.webView
+        }
+    }
 	
 	
 	// MARK: - View Handling
@@ -157,7 +163,7 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 		view.backgroundColor = UIColor.whiteColor()
 		
 		cancelButton = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: "cancel:")
-		navigationItem.rightBarButtonItem = cancelButton
+		navigationItem.leftBarButtonItem = cancelButton
 		
 		// create a web view
 		webView = UIWebView()
@@ -182,6 +188,13 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 				webView.loadHTMLString("There is no `startURL`", baseURL: nil)
 			}
 		}
+        
+        if let navbar = self.navigationController?.navigationBar {
+            navbar.barStyle = .Black
+            navbar.barTintColor = UIColor(red: 59/255, green: 176/255, blue: 104/255, alpha: 1)
+            navbar.tintColor = UIColor.whiteColor()
+        }
+        
 	}
 	
 	func showHideBackButton(show: Bool) {
@@ -194,12 +207,24 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 		}
 	}
 	
+    var indicator:UIActivityIndicatorView?
+    
 	func showLoadingIndicator() {
-		// TODO: implement
+        indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+        var frame = indicator!.frame
+        frame.origin.x = self.view.frame.width / 2 - frame.size.width / 2
+        frame.origin.y = self.view.frame.height / 2 - frame.size.height / 2
+        indicator!.frame = frame
+        self.view.addSubview(indicator!)
+        indicator?.startAnimating()
 	}
 	
 	func hideLoadingIndicator() {
-		// TODO: implement
+        if let ind = indicator {
+            ind.stopAnimating()
+            ind.removeFromSuperview()
+        }
+        indicator = nil
 	}
 	
 	func showErrorMessage(message: String, animated: Bool) {
@@ -259,7 +284,7 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 	
 	public func webViewDidFinishLoad(webView: UIWebView!) {
 		hideLoadingIndicator()
-		showHideBackButton(webView.canGoBack)
+//		showHideBackButton(webView.canGoBack)
 	}
 	
 	public func webView(webView: UIWebView!, didFailLoadWithError error: NSError!) {
