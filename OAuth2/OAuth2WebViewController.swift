@@ -176,26 +176,24 @@ public class OAuth2WebViewController: UIViewController, UIWebViewDelegate
 		view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[web]|", options: nil, metrics: nil, views: views))
 		view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[web]|", options: nil, metrics: nil, views: views))
 	}
-	
-	override public func viewWillAppear(animated: Bool) {
-		super.viewWillAppear(animated)
-		
-		if !webView.canGoBack {
-			if nil != startURL {
-				loadURL(startURL!)
-			}
-			else {
-				webView.loadHTMLString("There is no `startURL`", baseURL: nil)
-			}
-		}
+    
+    override public func viewDidLoad() {
+        super.viewDidLoad()
+        if !webView.canGoBack {
+            if nil != startURL {
+                loadURL(startURL!)
+            }
+            else {
+                webView.loadHTMLString("There is no `startURL`", baseURL: nil)
+            }
+        }
         
         if let navbar = self.navigationController?.navigationBar {
             navbar.barStyle = .Black
             navbar.barTintColor = UIColor(red: 59/255, green: 176/255, blue: 104/255, alpha: 1)
             navbar.tintColor = UIColor.whiteColor()
         }
-        
-	}
+    }
 	
 	func showHideBackButton(show: Bool) {
 		if show {
