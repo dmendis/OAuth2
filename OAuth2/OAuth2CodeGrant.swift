@@ -179,7 +179,7 @@ public class OAuth2CodeGrant: OAuth2
 				if let st = query["state"] {
 					if st == state {
 						code = cd
-						state = ""
+//						state = ""
 					}
 					else {
 						error = genOAuth2Error("Invalid state \(st), will not use the code", .InvalidState)
