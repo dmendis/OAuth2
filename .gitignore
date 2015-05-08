@@ -2,4 +2,9 @@
 
 # Xcode
 *.xcuserdatad
+*.xccheckout
+build
+
+# Documentation
+docs
 
