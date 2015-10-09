@@ -22,24 +22,28 @@ import Foundation
 
 
 /**
-	Facebook only returns an "access_token=xyz&..." string, no true JSON, hence we override `parseTokenExchangeResponse`
-	and deal with the situation in a subclass.
+    Facebook only returns an "access_token=xyz&..." string, no true JSON, hence we override `parseTokenExchangeResponse`
+    and deal with the situation in a subclass.
  */
 public class OAuth2CodeGrantFacebook: OAuth2CodeGrant
 {
 	/**
-		Facebook doesn't return JSON but a plain URL-query-like string. This override takes care of the situation and
-		extracts the token from the response.
+	    Facebook doesn't return JSON but a plain URL-query-like string. This override takes care of the situation and
+	    extracts the token from the response.
 	 */
-	override func parseTokenExchangeResponse(data: NSData, error: NSErrorPointer) -> OAuth2JSON? {
+	override func parseAccessTokenResponse(data: NSData) throws -> OAuth2JSON {
 		if let str = NSString(data: data, encoding: NSUTF8StringEncoding) as? String {
 			let query = self.dynamicType.paramsFromQuery(str)
+			if nil != query["error"] {
+				throw errorForErrorResponse(query)
+			}
+			
 			if let access = query["access_token"] {
 				accessToken = access
-				return ["access_token": accessToken]
+				return ["access_token": access]
 			}
 		}
-		return nil
+		throw genOAuth2Error("Invalid response data from token request")
 	}
 }
 

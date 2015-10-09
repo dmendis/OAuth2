@@ -18,12 +18,17 @@
 //  limitations under the License.
 //
 
+#if os(OSX)
+import Cocoa
+#endif
 import XCTest
+
+@testable
 import OAuth2
 
 
-class OAuth2Tests: XCTestCase {
-	
+class OAuth2Tests: XCTestCase
+{
 	func genericOAuth2() -> OAuth2 {
 		return OAuth2(settings: [
 			"client_id": "abc",
@@ -34,21 +39,19 @@ class OAuth2Tests: XCTestCase {
 	}
 	
 	func testInit() {
-		//var oauth = OAuth2(settings: NSDictionary())		// TODO: how to test that this raises?
-		
 		var oauth = OAuth2(settings: ["client_id": "def"])
 		XCTAssertFalse(oauth.verbose, "Non-verbose by default")
 		XCTAssertEqual(oauth.clientId, "def", "Must init `client_id`")
 		
-		let oa = self.genericOAuth2()
-		XCTAssertEqual(oa.authURL!, NSURL(string: "https://auth.ful.io")!, "Must init `authorize_uri`")
-		XCTAssertEqual(oa.scope!, "login", "Must init `scope`")
-		XCTAssertTrue(oa.verbose, "Must init `verbose`")
+		oauth = genericOAuth2()
+		XCTAssertEqual(oauth.authURL, NSURL(string: "https://auth.ful.io")!, "Must init `authorize_uri`")
+		XCTAssertEqual(oauth.scope!, "login", "Must init `scope`")
+		XCTAssertTrue(oauth.verbose, "Must init `verbose`")
 	}
 	
-	func testAuthorizeURL() {
+	func testAuthorizeURL() throws {
 		let oa = genericOAuth2()
-		let auth = oa.authorizeURL(oa.authURL!, redirect: "oauth2app://callback", scope: "launch", responseType: "code", params: nil)
+		let auth = try oa.authorizeURLWithBase(oa.authURL, redirect: "oauth2app://callback", scope: "launch", responseType: "code", params: nil)
 		
 		let comp = NSURLComponents(URL: auth, resolvingAgainstBaseURL: true)!
 		XCTAssertEqual("https", comp.scheme!, "Need correct scheme")
@@ -62,21 +65,21 @@ class OAuth2Tests: XCTestCase {
 	
 	func testQueryParamParsing() {
 		let params1 = OAuth2.paramsFromQuery("access_token=xxx&expires=2015-00-00&more=stuff")
-		XCTAssert(3 == count(params1), "Expecting 3 URL params")
+		XCTAssert(3 == params1.count, "Expecting 3 URL params")
 		
 		XCTAssertEqual(params1["access_token"]!, "xxx")
 		XCTAssertEqual(params1["expires"]!, "2015-00-00")
 		XCTAssertEqual(params1["more"]!, "stuff")
 		
 		let params2 = OAuth2.paramsFromQuery("access_token=x%26x&expires=2015-00-00&more=spacey%20stuff")
-		XCTAssert(3 == count(params1), "Expecting 3 URL params")
+		XCTAssert(3 == params1.count, "Expecting 3 URL params")
 		
 		XCTAssertEqual(params2["access_token"]!, "x&x")
 		XCTAssertEqual(params2["expires"]!, "2015-00-00")
 		XCTAssertEqual(params2["more"]!, "spacey stuff")
 		
 		let params3 = OAuth2.paramsFromQuery("access_token=xxx%3D%3D&expires=2015-00-00&more=spacey+stuff+with+a+%2B")
-		XCTAssert(3 == count(params1), "Expecting 3 URL params")
+		XCTAssert(3 == params1.count, "Expecting 3 URL params")
 		
 		XCTAssertEqual(params3["access_token"]!, "xxx==")
 		XCTAssertEqual(params3["expires"]!, "2015-00-00")
@@ -85,7 +88,7 @@ class OAuth2Tests: XCTestCase {
 	
 	func testQueryParamConversion() {
 		let qry = OAuth2.queryStringFor(["a": "AA", "b": "BB", "x": "yz"])
-		XCTAssertEqual(14, count(qry), "Expecting a 14 character string")
+		XCTAssertEqual(14, qry.characters.count, "Expecting a 14 character string")
 		
 		let dict = OAuth2.paramsFromQuery(qry)
 		XCTAssertEqual(dict["a"]!, "AA", "Must unpack `a`")
@@ -95,7 +98,7 @@ class OAuth2Tests: XCTestCase {
 	
 	func testQueryParamEncoding() {
 		let qry = OAuth2.queryStringFor(["uri": "https://api.io", "str": "a string: cool!", "num": "3.14159"])
-		XCTAssertEqual(60, count(qry), "Expecting a 60 character string")
+		XCTAssertEqual(60, qry.characters.count, "Expecting a 60 character string")
 		
 		let dict = OAuth2.paramsFromQuery(qry)
 		XCTAssertEqual(dict["uri"]!, "https://api.io", "Must correctly unpack `uri`")
